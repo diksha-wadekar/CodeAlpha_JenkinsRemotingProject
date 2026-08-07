@@ -1,0 +1,42 @@
+version: "3.8"
+
+# CodeAlpha DevOps Internship - Task 2: Jenkins Remoting Project
+#
+# Spins up a Jenkins controller plus a separate SSH-based agent container,
+# simulating a "remote" build node connected via Jenkins Remoting (JNLP/SSH).
+#
+# Usage:
+#   docker compose up -d
+#   Open http://localhost:8080 and follow README.md to connect the agent.
+
+services:
+  jenkins-controller:
+    image: jenkins/jenkins:lts-jdk17
+    container_name: jenkins-controller
+    ports:
+      - "8080:8080"   # Web UI
+      - "50000:50000" # Agent (JNLP) communication port
+    volumes:
+      - jenkins_home:/var/jenkins_home
+    networks:
+      - jenkins-net
+    restart: unless-stopped
+
+  jenkins-agent:
+    image: jenkins/ssh-agent:latest-jdk17
+    container_name: jenkins-agent
+    hostname: remote-node-1
+    environment:
+      # Public key of the SSH keypair Jenkins will use to log into this agent.
+      # Generate a keypair and paste the PUBLIC key value here (see README).
+      - JENKINS_AGENT_SSH_PUBKEY=ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC5uC5XxISAa13nRjch4WK10SHUs9aGslL7HaesWn37VaKZP3Wp+UX3tUzFvK89sB2cdHl2oKqPQVkho3XCuA6PA0s0Zp24uI3tazrlM0EB2F5Lr5WC6Nsew2/ZPa09h9fVNkzs4zz55Znc8H8BXn2jB0Us+xQo8snmVZwL9whueNpUcC+cr9sfOR4N7/UgBwETi8K9drYhptWNzi1vep1U2hyHjl6auOU/AJY9ThhyJg7Omn+wDvKJw4bq8yDIoSyePqPY1vjdNRfoFQZ+a16CPaLnVO00E3B7ZduBpWtENieBDCqFwtlF3z+LYQbQX5bzgBUvhzN5PbBVuEbgstaoobU3HOzMO7by962o3m4oMPkQm4Yz/J8sJrjE0H0G/pIZwrbShnFRAMT/zhaG3Bstkg5UvXTKaKRoEix2XJzniaSyHDaIIzDt7a1OPhPleLMrbqZ2i1luOYVNwgPmRCNyVkjmiN0VUViqzm2W4QVNxVWZNruD1IvZs4wTo2JbmMeC+suY0EENPFAs8Fn5YqGjFemB3HtRnkg57kNLGMlNrB/wSHcdxvss0mB7j1QM4lYuVfSeYi5AYkdppD3Vpr57FI7e9+ya6lgYhSMK8bGsDGIg3kOjQF8EUiJJ/4v+voB1sqpTJmfe8NjWbQit0TCgbfedfZym0NAPEzwDmJBz4Q== diksha@WIN-ENCMG47A636
+    networks:
+      - jenkins-net
+    restart: unless-stopped
+
+networks:
+  jenkins-net:
+    driver: bridge
+
+volumes:
+  jenkins_home:

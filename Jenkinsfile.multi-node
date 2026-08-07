@@ -1,0 +1,38 @@
+// CodeAlpha DevOps Internship - Task 2: Jenkins Remoting Project
+//
+// Optional bonus pipeline: demonstrates distributing DIFFERENT stages
+// to DIFFERENT remote nodes by label, showing build-load distribution
+// across multiple machines/architectures.
+//
+// Requires a second agent node labelled 'java-build' in addition to
+// 'linux-remote' (see README.md, "Bonus: second agent").
+
+pipeline {
+    agent none
+
+    stages {
+        stage('Checkout on remote-node-1') {
+            agent { label 'linux-remote' }
+            steps {
+                echo "Running checkout stage on: ${env.NODE_NAME}"
+                sh 'hostname'
+            }
+        }
+
+        stage('Build on java-build node') {
+            agent { label 'java-build' }
+            steps {
+                echo "Running build stage on: ${env.NODE_NAME}"
+                sh 'hostname'
+                sh 'echo "Simulated java build step"'
+            }
+        }
+
+        stage('Report') {
+            agent { label 'linux-remote' }
+            steps {
+                echo "Back on ${env.NODE_NAME} to summarize the run"
+            }
+        }
+    }
+}

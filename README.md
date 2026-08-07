@@ -141,17 +141,17 @@ This starts two containers: `jenkins-controller` and `jenkins-agent`, connected 
 ### 1. Remote agent connects successfully
 The agent node `remote-node-1` registers with the controller and shows as online, in sync, with a healthy response time.
 
-![Node Status](screenshots/node-status.png)
+![Node Status](Screenshots/node-status.png)
 
 ### 2. Pipeline executes on the remote node
 Running the `remote-node-test` pipeline confirms the build is dispatched to `remote-node-1` — not the controller. The `hostname` and `whoami` steps in the console output verify this directly.
 
-![Console Output](screenshots/console-output.png)
+![Console Output](Screenshots/console-output.png)
 
 ### 3. Node isolation on the controller
 The Built-In Node (controller) is configured with **0 executors**, so it is physically incapable of running any build itself. Every job is forced onto the labeled remote agent — a real-world security/scalability best practice.
 
-![Executor Isolation](screenshots/executor-isolation.png)
+![Executor Isolation](Screenshots/executor-isolation.png)
 
 ### Result
 All builds are distributed to the remote SSH agent, with the controller dedicated purely to orchestration.

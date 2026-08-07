@@ -130,7 +130,7 @@ To demonstrate distributing *different* stages to *different* machines:
 - Node isolation as a security hardening practice
 - Multi-stage pipelines spanning multiple remote nodes
 
-  ## Setup & Verification
+ ## Setup & Verification
 
 ### Bring up the stack
 \`\`\`bash
@@ -138,19 +138,20 @@ docker-compose up -d
 \`\`\`
 This starts two containers: `jenkins-controller` and `jenkins-agent`, connected over the `jenkins-net` bridge network.
 
-### Verify the agent connected
-1. Open the Jenkins UI at `http://localhost:8080`
-2. Go to **Manage Jenkins → Nodes**
-3. Confirm `remote-node-1` shows as **online** (green icon)
+### 1. Remote agent connects successfully
+The agent node `remote-node-1` registers with the controller and shows as online, in sync, with a healthy response time.
 
-### Verify builds run on the remote node
-Run the pipeline job defined in `Jenkinsfile`. The build stage executes `hostname` and `whoami` — check the console output to confirm these return the **agent container's** hostname, not the controller's, proving the build was actually distributed to the remote node.
+![Node Status](screenshots/node-status.png)
 
-### Node isolation
-The controller is configured with **0 executors**, so no build can run on it directly — every job is forced onto the labeled remote agent. This mirrors a real-world security/scalability practice: keep the controller dedicated to orchestration only.
+### 2. Pipeline executes on the remote node
+Running the `remote-node-test` pipeline confirms the build is dispatched to `remote-node-1` — not the controller. The `hostname` and `whoami` steps in the console output verify this directly.
 
-### Stack verification
-\`\`\`bash
-docker ps
-\`\`\`
-Should show both `jenkins-controller` and `jenkins-agent` containers as `Up`.
+![Console Output](screenshots/console-output.png)
+
+### 3. Node isolation on the controller
+The Built-In Node (controller) is configured with **0 executors**, so it is physically incapable of running any build itself. Every job is forced onto the labeled remote agent — a real-world security/scalability best practice.
+
+![Executor Isolation](screenshots/executor-isolation.png)
+
+### Result
+All builds are distributed to the remote SSH agent, with the controller dedicated purely to orchestration.

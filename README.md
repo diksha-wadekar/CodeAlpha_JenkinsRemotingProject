@@ -129,3 +129,28 @@ To demonstrate distributing *different* stages to *different* machines:
 - Distributing build load across machines via node labels
 - Node isolation as a security hardening practice
 - Multi-stage pipelines spanning multiple remote nodes
+
+  ## Setup & Verification
+
+### Bring up the stack
+\`\`\`bash
+docker-compose up -d
+\`\`\`
+This starts two containers: `jenkins-controller` and `jenkins-agent`, connected over the `jenkins-net` bridge network.
+
+### Verify the agent connected
+1. Open the Jenkins UI at `http://localhost:8080`
+2. Go to **Manage Jenkins → Nodes**
+3. Confirm `remote-node-1` shows as **online** (green icon)
+
+### Verify builds run on the remote node
+Run the pipeline job defined in `Jenkinsfile`. The build stage executes `hostname` and `whoami` — check the console output to confirm these return the **agent container's** hostname, not the controller's, proving the build was actually distributed to the remote node.
+
+### Node isolation
+The controller is configured with **0 executors**, so no build can run on it directly — every job is forced onto the labeled remote agent. This mirrors a real-world security/scalability practice: keep the controller dedicated to orchestration only.
+
+### Stack verification
+\`\`\`bash
+docker ps
+\`\`\`
+Should show both `jenkins-controller` and `jenkins-agent` containers as `Up`.
